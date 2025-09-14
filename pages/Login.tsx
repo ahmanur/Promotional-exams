@@ -1,11 +1,11 @@
 import React, { useState } from 'react';
-// FIX: Changed react-router-dom import to a namespace import to fix module resolution issues.
-import * as ReactRouterDOM from 'react-router-dom';
+// FIX: Reverted to named imports for react-router-dom to resolve hook resolution errors.
+import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 
 const Login: React.FC = () => {
   const { login } = useAuth();
-  const navigate = ReactRouterDOM.useNavigate();
+  const navigate = useNavigate();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');

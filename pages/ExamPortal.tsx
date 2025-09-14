@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
-// FIX: Changed react-router-dom import to a namespace import to fix module resolution issues.
-import * as ReactRouterDOM from 'react-router-dom';
+// FIX: Reverted to named imports for react-router-dom to resolve hook resolution errors.
+import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import { mockQuestions, mockDepartments } from '../services/mockData';
 import { Question } from '../types';
 import { ClockIcon, ChevronLeftIcon, ChevronRightIcon, CheckCircleIcon, CheckIcon, XMarkIcon, ListBulletIcon } from '../components/icons/Icons';
@@ -96,9 +96,9 @@ const QuestionNavigatorModal: React.FC<QuestionNavigatorModalProps> = ({ isOpen,
 
 
 const ExamPortal: React.FC = () => {
-    const { deptId } = ReactRouterDOM.useParams<{ deptId: string }>();
-    const navigate = ReactRouterDOM.useNavigate();
-    const location = ReactRouterDOM.useLocation();
+    const { deptId } = useParams<{ deptId: string }>();
+    const navigate = useNavigate();
+    const location = useLocation();
     
     const [questions, setQuestions] = useState<Question[]>([]);
     const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);

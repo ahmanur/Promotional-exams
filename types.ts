@@ -60,3 +60,24 @@ export interface ExamResult {
   answers: { [questionId: string]: string };
   questions: Question[];
 }
+
+export interface DiscussionGroup {
+  id: string;
+  name: string;
+}
+
+export interface MessageAttachment {
+    type: 'image' | 'document';
+    url?: string;
+    name?: string;
+    size?: string;
+}
+
+export interface Message {
+  id: string;
+  groupId: string;
+  userId: string;
+  timestamp: string;
+  content: string;
+  attachment?: MessageAttachment;
+}

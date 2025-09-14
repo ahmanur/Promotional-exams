@@ -1,26 +1,43 @@
+
 import React from 'react';
-// FIX: Changed react-router-dom import to a namespace import to fix module resolution issues.
-import * as ReactRouterDOM from 'react-router-dom';
+// FIX: Reverted to named imports for react-router-dom to resolve component and hook resolution errors.
+import { NavLink, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { Role } from '../types';
-import { HomeIcon, BookOpenIcon, UsersIcon, QuestionMarkCircleIcon, UserCircleIcon, ArrowLeftOnRectangleIcon, Bars3Icon, XMarkIcon, ClipboardDocumentCheckIcon, DocumentTextIcon } from './icons/Icons';
+import { Role, Message } from '../types';
+import { HomeIcon, BookOpenIcon, UsersIcon, QuestionMarkCircleIcon, UserCircleIcon, ArrowLeftOnRectangleIcon, Bars3Icon, XMarkIcon, ClipboardDocumentCheckIcon, DocumentTextIcon, ClipboardDocumentListIcon, ChatBubbleLeftRightIcon, GameControllerIcon } from './icons/Icons';
 import TakeExamModal from './TakeExamModal';
 import DocumentLibraryModal from './DocumentLibraryModal';
+import SyllabusModal from './SyllabusModal';
+import DiscussionsModal from './DiscussionsModal';
 import ThemeToggle from './ThemeToggle';
+import ExamGameZoneModal from './ExamGameZoneModal';
+
+const MESSAGES_STORAGE_KEY = 'cbnExamHubMessages';
 
 interface NavItemProps {
     to?: string;
     icon: React.ReactNode;
     label: string;
     onClick?: () => void;
+    hasNotification?: boolean;
 }
 
-const NavItem: React.FC<NavItemProps> = ({ to, icon, label, onClick }) => {
-    const commonClasses = "flex items-center p-3 my-1 rounded-lg transition-colors w-full text-left";
+const NavItem: React.FC<NavItemProps> = ({ to, icon, label, onClick, hasNotification }) => {
+    const commonClasses = "flex items-center p-3 my-1 rounded-lg transition-colors w-full text-left relative";
     
+    const content = (
+        <>
+            {icon}
+            <span className="ml-4">{label}</span>
+            {hasNotification && (
+                <span className="absolute right-3 top-1/2 -translate-y-1/2 w-2.5 h-2.5 bg-red-500 rounded-full border-2 border-cbn-green animate-pulse"></span>
+            )}
+        </>
+    );
+
     if (to) {
         return (
-            <ReactRouterDOM.NavLink
+            <NavLink
                 to={to}
                 onClick={onClick}
                 className={({ isActive }) =>
@@ -31,9 +48,8 @@ const NavItem: React.FC<NavItemProps> = ({ to, icon, label, onClick }) => {
                     }`
                 }
             >
-                {icon}
-                <span className="ml-4">{label}</span>
-            </ReactRouterDOM.NavLink>
+                {content}
+            </NavLink>
         );
     }
 
@@ -42,13 +58,20 @@ const NavItem: React.FC<NavItemProps> = ({ to, icon, label, onClick }) => {
             onClick={onClick}
             className={`${commonClasses} text-white hover:bg-cbn-green/50`}
         >
-            {icon}
-            <span className="ml-4">{label}</span>
+            {content}
         </button>
     );
 };
 
-const Sidebar: React.FC<{onLinkClick: () => void; openExamModal: () => void; openDocModal: () => void;}> = ({onLinkClick, openExamModal, openDocModal}) => {
+const Sidebar: React.FC<{
+    onLinkClick: () => void; 
+    openExamModal: () => void; 
+    openDocModal: () => void; 
+    openSyllabusModal: () => void; 
+    openDiscussionsModal: () => void;
+    openGameZoneModal: () => void;
+    hasNewMessages: boolean;
+}> = ({onLinkClick, openExamModal, openDocModal, openSyllabusModal, openDiscussionsModal, openGameZoneModal, hasNewMessages}) => {
     const { user } = useAuth();
     
     const handleTakeExamClick = () => {
@@ -61,12 +84,30 @@ const Sidebar: React.FC<{onLinkClick: () => void; openExamModal: () => void; ope
         onLinkClick(); // Close sidebar on mobile
     };
 
+    const handleSyllabusModalClick = () => {
+        openSyllabusModal();
+        onLinkClick();
+    };
+
+    const handleDiscussionsModalClick = () => {
+        openDiscussionsModal();
+        onLinkClick();
+    };
+
+    const handleGameZoneModalClick = () => {
+        openGameZoneModal();
+        onLinkClick();
+    };
+
     return (
         <nav className="flex-1 px-4 py-6">
             <NavItem to="/dashboard" icon={<HomeIcon />} label="Dashboard" onClick={onLinkClick} />
             <NavItem to="/documents" icon={<BookOpenIcon />} label="CBN Departments" onClick={onLinkClick} />
             <NavItem icon={<DocumentTextIcon />} label="Document Library" onClick={handleDocModalClick} />
             <NavItem icon={<ClipboardDocumentCheckIcon />} label="Take Exam" onClick={handleTakeExamClick} />
+            <NavItem icon={<ClipboardDocumentListIcon />} label="Syllabus" onClick={handleSyllabusModalClick} />
+            <NavItem icon={<GameControllerIcon />} label="Exam Game Zone" onClick={handleGameZoneModalClick} />
+            <NavItem icon={<ChatBubbleLeftRightIcon />} label="Discussions" onClick={handleDiscussionsModalClick} hasNotification={hasNewMessages} />
             {user?.role === Role.STAFF && (
                 <NavItem to="/profile" icon={<UserCircleIcon />} label="My Progress" onClick={onLinkClick} />
             )}
@@ -82,7 +123,7 @@ const Sidebar: React.FC<{onLinkClick: () => void; openExamModal: () => void; ope
 };
 
 const Header: React.FC<{ onMenuClick: () => void }> = ({ onMenuClick }) => {
-    const navigate = ReactRouterDOM.useNavigate();
+    const navigate = useNavigate();
     const { user, logout } = useAuth();
 
     const handleLogout = () => {
@@ -118,6 +159,73 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
     const [sidebarOpen, setSidebarOpen] = React.useState(false);
     const [isExamModalOpen, setIsExamModalOpen] = React.useState(false);
     const [isDocModalOpen, setIsDocModalOpen] = React.useState(false);
+    const [isSyllabusModalOpen, setIsSyllabusModalOpen] = React.useState(false);
+    const [isDiscussionsModalOpen, setIsDiscussionsModalOpen] = React.useState(false);
+    const [isGameZoneModalOpen, setIsGameZoneModalOpen] = React.useState(false);
+
+    const [messages, setMessages] = React.useState<Message[]>(() => {
+        try {
+            const storedMessages = window.localStorage.getItem(MESSAGES_STORAGE_KEY);
+            return storedMessages ? JSON.parse(storedMessages) : [];
+        } catch (error) {
+            console.error("Error reading messages from localStorage", error);
+            return [];
+        }
+    });
+    const [hasNewMessages, setHasNewMessages] = React.useState(false);
+    
+    // Use a ref to track modal state to avoid stale closures in the storage event listener.
+    const isDiscussionsModalOpenRef = React.useRef(isDiscussionsModalOpen);
+    React.useEffect(() => {
+        isDiscussionsModalOpenRef.current = isDiscussionsModalOpen;
+    }, [isDiscussionsModalOpen]);
+
+    // Effect for listening for cross-tab updates via localStorage.
+    React.useEffect(() => {
+        // Function to handle incoming storage events from other tabs
+        const handleStorageChange = (event: StorageEvent) => {
+            if (event.key === MESSAGES_STORAGE_KEY && event.newValue) {
+                try {
+                    const newMessages = JSON.parse(event.newValue);
+                    setMessages(newMessages);
+                    // If modal is closed in this tab, show notification for new message
+                    if (!isDiscussionsModalOpenRef.current) {
+                        setHasNewMessages(true);
+                    }
+                } catch (e) {
+                    console.error("Error parsing messages from storage event", e);
+                }
+            }
+        };
+
+        // Listen for storage events to sync tabs
+        window.addEventListener('storage', handleStorageChange);
+
+        // Cleanup listener on component unmount
+        return () => {
+            window.removeEventListener('storage', handleStorageChange);
+        };
+    }, []); // Empty dependency array ensures this runs only once on mount.
+
+    // Effect to write any message changes from this tab to localStorage, which triggers the 'storage' event in other tabs.
+    React.useEffect(() => {
+        try {
+            window.localStorage.setItem(MESSAGES_STORAGE_KEY, JSON.stringify(messages));
+        } catch (error) {
+            console.error("Error saving messages to localStorage", error);
+        }
+    }, [messages]);
+
+    const handleSendMessage = (message: Message) => {
+        // Update state, which triggers the useEffect above to save and sync.
+        setMessages(prev => [...prev, message]);
+    };
+    
+    const handleOpenDiscussionsModal = () => {
+        setIsDiscussionsModalOpen(true);
+        setHasNewMessages(false);
+    };
+
 
     return (
         <>
@@ -140,6 +248,10 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
                         onLinkClick={() => setSidebarOpen(false)} 
                         openExamModal={() => setIsExamModalOpen(true)}
                         openDocModal={() => setIsDocModalOpen(true)}
+                        openSyllabusModal={() => setIsSyllabusModalOpen(true)}
+                        openDiscussionsModal={handleOpenDiscussionsModal}
+                        openGameZoneModal={() => setIsGameZoneModalOpen(true)}
+                        hasNewMessages={hasNewMessages}
                     />
                 </aside>
                 
@@ -153,6 +265,14 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
             </div>
             <TakeExamModal isOpen={isExamModalOpen} onClose={() => setIsExamModalOpen(false)} />
             <DocumentLibraryModal isOpen={isDocModalOpen} onClose={() => setIsDocModalOpen(false)} />
+            <SyllabusModal isOpen={isSyllabusModalOpen} onClose={() => setIsSyllabusModalOpen(false)} />
+            <ExamGameZoneModal isOpen={isGameZoneModalOpen} onClose={() => setIsGameZoneModalOpen(false)} />
+            <DiscussionsModal 
+                isOpen={isDiscussionsModalOpen} 
+                onClose={() => setIsDiscussionsModalOpen(false)}
+                messages={messages}
+                onSendMessage={handleSendMessage}
+            />
         </>
     );
 };

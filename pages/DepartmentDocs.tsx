@@ -1,11 +1,13 @@
 import React, { useState, useMemo } from 'react';
-// FIX: Changed react-router-dom import to a namespace import to fix module resolution issues.
-import * as ReactRouterDOM from 'react-router-dom';
+// FIX: Reverted to named imports for react-router-dom to resolve hook resolution errors.
+import { useParams, useNavigate } from 'react-router-dom';
 import { mockDepartments, mockDocuments } from '../services/mockData';
 import { Document, DocumentType } from '../types';
 import { useAuth } from '../context/AuthContext';
 import { Role } from '../types';
-import { MagnifyingGlassIcon, DocumentArrowDownIcon, PencilIcon, TrashIcon, ArrowUpOnSquareIcon, DocumentDuplicateIcon, XMarkIcon } from '../components/icons/Icons';
+import { MagnifyingGlassIcon, DocumentArrowDownIcon, PencilIcon, TrashIcon, ArrowUpOnSquareIcon, DocumentDuplicateIcon, XMarkIcon, BookOpenIcon } from '../components/icons/Icons';
+import DocumentViewer from '../components/DocumentViewer';
+import { documentContent } from '../services/documentContent';
 
 interface ExamModeSelectionModalProps {
   isOpen: boolean;
@@ -59,13 +61,14 @@ const ExamModeSelectionModal: React.FC<ExamModeSelectionModalProps> = ({ isOpen,
 };
 
 const DepartmentDocs: React.FC = () => {
-    const { deptId } = ReactRouterDOM.useParams<{ deptId: string }>();
-    const navigate = ReactRouterDOM.useNavigate();
+    const { deptId } = useParams<{ deptId: string }>();
+    const navigate = useNavigate();
     const { user } = useAuth();
     const [searchTerm, setSearchTerm] = useState('');
     const [filterType, setFilterType] = useState<DocumentType | 'All'>('All');
     const [filterYear, setFilterYear] = useState<number | 'All'>('All');
     const [isModeModalOpen, setIsModeModalOpen] = useState(false);
+    const [viewingDocument, setViewingDocument] = useState<Document | null>(null);
 
     const department = mockDepartments.find(d => d.id === deptId);
 
@@ -93,6 +96,27 @@ const DepartmentDocs: React.FC = () => {
             // In a real app, you would handle the file upload here.
             alert(`Simulating upload of: ${event.target.files[0].name}`);
         }
+    };
+
+    const handleDownload = (doc: Document) => {
+        const content = documentContent[doc.id];
+        if (!content) {
+            alert("Sorry, the content for this document could not be found.");
+            return;
+        }
+
+        const fileContent = Array.isArray(content) ? content.join('\n\n--- End of Page ---\n\n') : content;
+        const blob = new Blob([fileContent], { type: 'text/plain;charset=utf-8;' });
+        const link = document.createElement("a");
+        const url = URL.createObjectURL(blob);
+        link.setAttribute("href", url);
+        // We use .txt because the content is text, not a real PDF/DOCX.
+        link.setAttribute("download", `${doc.title.replace(/ /g, '_')}.txt`); 
+        link.style.visibility = 'hidden';
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        URL.revokeObjectURL(url);
     };
 
 
@@ -180,8 +204,8 @@ const DepartmentDocs: React.FC = () => {
                                 <td className="p-4 text-gray-600 dark:text-gray-400">{doc.uploadedAt}</td>
                                 <td className="p-4 text-center">
                                     <div className="flex justify-center items-center space-x-2">
-                                        <button className="text-blue-600 hover:text-blue-800 p-1" title="Preview"><MagnifyingGlassIcon /></button>
-                                        <button className="text-green-600 hover:text-green-800 p-1" title="Download"><DocumentArrowDownIcon /></button>
+                                        <button onClick={() => setViewingDocument(doc)} className="text-blue-600 hover:text-blue-800 p-1" title="Read Document"><BookOpenIcon /></button>
+                                        <button onClick={() => handleDownload(doc)} className="text-green-600 hover:text-green-800 p-1" title="Download"><DocumentArrowDownIcon /></button>
                                         {user?.role === Role.ADMIN && (
                                             <>
                                                 <button className="text-yellow-600 hover:text-yellow-800 p-1" title="Edit"><PencilIcon /></button>
@@ -217,6 +241,7 @@ const DepartmentDocs: React.FC = () => {
                     navigate(`/exam/${deptId}`, { state: { examMode: mode } });
                 }}
             />
+            <DocumentViewer document={viewingDocument} onClose={() => setViewingDocument(null)} />
         </div>
     );
 };

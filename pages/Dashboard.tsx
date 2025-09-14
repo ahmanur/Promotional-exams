@@ -1,8 +1,8 @@
 import React from 'react';
 import { useAuth } from '../context/AuthContext';
 import { Role } from '../types';
-// FIX: Changed react-router-dom import to a namespace import to fix module resolution issues.
-import * as ReactRouterDOM from 'react-router-dom';
+// FIX: Reverted to named imports for react-router-dom to resolve component and hook resolution errors.
+import { Link } from 'react-router-dom';
 import { mockDepartments, mockUsers, mockDocuments, mockQuestions } from '../services/mockData';
 import { ChartBarIcon, DocumentTextIcon, UsersIcon, QuestionMarkCircleIcon } from '../components/icons/Icons';
 
@@ -39,9 +39,9 @@ const AdminDashboard: React.FC = () => {
             <div className="mt-10 bg-white dark:bg-gray-800 p-6 rounded-xl shadow-lg">
                 <h3 className="text-xl font-bold text-gray-800 dark:text-gray-200 mb-4">Quick Actions</h3>
                 <div className="flex flex-wrap gap-4">
-                    <ReactRouterDOM.Link to="/admin/users" className="bg-cbn-green text-white font-bold py-2 px-4 rounded-lg hover:bg-opacity-90 transition">Manage Users</ReactRouterDOM.Link>
-                    <ReactRouterDOM.Link to="/admin/questions" className="bg-cbn-green text-white font-bold py-2 px-4 rounded-lg hover:bg-opacity-90 transition">Manage Questions</ReactRouterDOM.Link>
-                    <ReactRouterDOM.Link to="/documents" className="bg-cbn-gold text-cbn-green font-bold py-2 px-4 rounded-lg hover:bg-opacity-90 transition">View CBN Departments</ReactRouterDOM.Link>
+                    <Link to="/admin/users" className="bg-cbn-green text-white font-bold py-2 px-4 rounded-lg hover:bg-opacity-90 transition">Manage Users</Link>
+                    <Link to="/admin/questions" className="bg-cbn-green text-white font-bold py-2 px-4 rounded-lg hover:bg-opacity-90 transition">Manage Questions</Link>
+                    <Link to="/documents" className="bg-cbn-gold text-cbn-green font-bold py-2 px-4 rounded-lg hover:bg-opacity-90 transition">View CBN Departments</Link>
                 </div>
             </div>
         </div>
@@ -61,27 +61,27 @@ const StaffDashboard: React.FC = () => {
                     <p className="text-gray-600 dark:text-gray-400 mb-4">Select a department to begin a practice test and gauge your knowledge.</p>
                     <div className="flex flex-col space-y-2">
                         {mockDepartments.slice(0, 3).map(dept => (
-                            <ReactRouterDOM.Link key={dept.id} to={`/exam/${dept.id}`} className="block text-center bg-cbn-green text-white font-bold py-3 px-4 rounded-lg hover:bg-opacity-90 transition">
+                            <Link key={dept.id} to={`/exam/${dept.id}`} className="block text-center bg-cbn-green text-white font-bold py-3 px-4 rounded-lg hover:bg-opacity-90 transition">
                                 {dept.name} Exam
-                            </ReactRouterDOM.Link>
+                            </Link>
                         ))}
-                         <ReactRouterDOM.Link to="/documents" className="block text-center bg-gray-200 text-gray-800 font-bold py-3 px-4 rounded-lg hover:bg-gray-300 transition dark:bg-gray-700 dark:text-gray-200 dark:hover:bg-gray-600">
+                         <Link to="/documents" className="block text-center bg-gray-200 text-gray-800 font-bold py-3 px-4 rounded-lg hover:bg-gray-300 transition dark:bg-gray-700 dark:text-gray-200 dark:hover:bg-gray-600">
                             More Departments...
-                        </ReactRouterDOM.Link>
+                        </Link>
                     </div>
                 </div>
                 <div className="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-lg">
                     <h3 className="text-xl font-bold text-cbn-green dark:text-cbn-gold mb-4">Explore Study Materials</h3>
                      <p className="text-gray-600 dark:text-gray-400 mb-4">Access official documents and materials uploaded for each department.</p>
-                    <ReactRouterDOM.Link to="/documents" className="block w-full text-center bg-cbn-gold text-cbn-green font-bold py-3 px-4 rounded-lg hover:bg-opacity-90 transition">
+                    <Link to="/documents" className="block w-full text-center bg-cbn-gold text-cbn-green font-bold py-3 px-4 rounded-lg hover:bg-opacity-90 transition">
                         Browse CBN Departments
-                    </ReactRouterDOM.Link>
+                    </Link>
 
                     <h3 className="text-xl font-bold text-cbn-green dark:text-cbn-gold mt-8 mb-4">Track Your Progress</h3>
                     <p className="text-gray-600 dark:text-gray-400 mb-4">Review your past exam performance and identify areas for improvement.</p>
-                     <ReactRouterDOM.Link to="/profile" className="block w-full text-center bg-cbn-gold text-cbn-green font-bold py-3 px-4 rounded-lg hover:bg-opacity-90 transition">
+                     <Link to="/profile" className="block w-full text-center bg-cbn-gold text-cbn-green font-bold py-3 px-4 rounded-lg hover:bg-opacity-90 transition">
                         View My Progress
-                    </ReactRouterDOM.Link>
+                    </Link>
                 </div>
             </div>
         </div>

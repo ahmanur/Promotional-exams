@@ -1,6 +1,6 @@
 import React from 'react';
-// FIX: Changed react-router-dom import to a namespace import to fix module resolution issues.
-import * as ReactRouterDOM from 'react-router-dom';
+// FIX: Reverted to named imports for react-router-dom to resolve component and hook resolution errors.
+import { Link } from 'react-router-dom';
 import { mockDirectorates } from '../services/mockData';
 import { BookOpenIcon } from '../components/icons/Icons';
 
@@ -16,7 +16,7 @@ const DocumentLibrary: React.FC = () => {
             <h2 className="text-2xl font-bold text-cbn-green dark:text-cbn-gold mb-4 pb-2 border-b-2 border-cbn-gold">{directorate.name}</h2>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {directorate.departments.map(dept => (
-                <ReactRouterDOM.Link 
+                <Link 
                   key={dept.id} 
                   to={`/documents/${dept.id}`}
                   className="group block bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md hover:shadow-xl hover:-translate-y-1 transition-all duration-300"
@@ -30,7 +30,7 @@ const DocumentLibrary: React.FC = () => {
                           <p className="text-gray-600 dark:text-gray-400 mt-1 text-sm">{dept.description}</p>
                       </div>
                   </div>
-                </ReactRouterDOM.Link>
+                </Link>
               ))}
             </div>
           </div>

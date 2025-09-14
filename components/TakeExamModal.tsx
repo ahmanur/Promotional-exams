@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import * as ReactRouterDOM from 'react-router-dom';
+// FIX: Reverted to a named import for `useNavigate` from `react-router-dom` to fix a hook resolution error.
+import { useNavigate } from 'react-router-dom';
 import { mockQuestions } from '../services/mockData';
 import { XMarkIcon } from './icons/Icons';
 
@@ -12,7 +13,7 @@ const TakeExamModal: React.FC<TakeExamModalProps> = ({ isOpen, onClose }) => {
   const [numQuestions, setNumQuestions] = useState(10);
   const [timeLimit, setTimeLimit] = useState(15); // in minutes
   const [examMode, setExamMode] = useState<'standard' | 'instant'>('standard');
-  const navigate = ReactRouterDOM.useNavigate();
+  const navigate = useNavigate();
 
   if (!isOpen) return null;
 
@@ -76,7 +77,7 @@ const TakeExamModal: React.FC<TakeExamModalProps> = ({ isOpen, onClose }) => {
                 id="timeLimit"
                 type="range"
                 min="5"
-                max="60"
+                max="180"
                 step="5"
                 value={timeLimit}
                 onChange={(e) => setTimeLimit(Number(e.target.value))}
@@ -84,7 +85,7 @@ const TakeExamModal: React.FC<TakeExamModalProps> = ({ isOpen, onClose }) => {
               />
               <div className="flex justify-between text-sm text-gray-500 dark:text-gray-400 mt-1">
                 <span>5</span>
-                <span>60</span>
+                <span>180</span>
               </div>
             </div>
 

@@ -1,6 +1,6 @@
 import React from 'react';
-// FIX: Changed react-router-dom import to a namespace import to fix module resolution issues.
-import * as ReactRouterDOM from 'react-router-dom';
+// FIX: Reverted to named imports for react-router-dom to resolve component and hook resolution errors.
+import { HashRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { ThemeProvider } from './context/ThemeContext';
 import Login from './pages/Login';
@@ -24,11 +24,11 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children, roles }) => {
   const { user } = useAuth();
 
   if (!user) {
-    return <ReactRouterDOM.Navigate to="/login" replace />;
+    return <Navigate to="/login" replace />;
   }
   
   if (roles && !roles.includes(user.role)) {
-     return <ReactRouterDOM.Navigate to="/" replace />;
+     return <Navigate to="/" replace />;
   }
 
   return <>{children}</>;
@@ -39,9 +39,9 @@ const App: React.FC = () => {
   return (
     <AuthProvider>
       <ThemeProvider>
-        <ReactRouterDOM.HashRouter>
+        <HashRouter>
           <AppRoutes />
-        </ReactRouterDOM.HashRouter>
+        </HashRouter>
       </ThemeProvider>
     </AuthProvider>
   );
@@ -51,33 +51,33 @@ const AppRoutes: React.FC = () => {
     const { user } = useAuth();
 
     return (
-        <ReactRouterDOM.Routes>
-            <ReactRouterDOM.Route path="/login" element={<Login />} />
-            <ReactRouterDOM.Route path="/" element={ user ? <ReactRouterDOM.Navigate to="/dashboard" /> : <ReactRouterDOM.Navigate to="/login" />} />
+        <Routes>
+            <Route path="/login" element={<Login />} />
+            <Route path="/" element={ user ? <Navigate to="/dashboard" /> : <Navigate to="/login" />} />
             
-            <ReactRouterDOM.Route path="/*" element={
+            <Route path="/*" element={
                 <ProtectedRoute>
                     <Layout>
-                        <ReactRouterDOM.Routes>
-                            <ReactRouterDOM.Route path="/dashboard" element={<Dashboard />} />
-                            <ReactRouterDOM.Route path="/documents" element={<DocumentLibrary />} />
-                            <ReactRouterDOM.Route path="/documents/:deptId" element={<DepartmentDocs />} />
-                            <ReactRouterDOM.Route path="/exam/:deptId" element={<ExamPortal />} />
-                            <ReactRouterDOM.Route path="/results" element={<ExamResults />} />
+                        <Routes>
+                            <Route path="/dashboard" element={<Dashboard />} />
+                            <Route path="/documents" element={<DocumentLibrary />} />
+                            <Route path="/documents/:deptId" element={<DepartmentDocs />} />
+                            <Route path="/exam/:deptId" element={<ExamPortal />} />
+                            <Route path="/results" element={<ExamResults />} />
                             
                             {/* Staff Routes */}
-                            <ReactRouterDOM.Route path="/profile" element={<ProtectedRoute roles={[Role.STAFF]}><ProfileDashboard /></ProtectedRoute>} />
+                            <Route path="/profile" element={<ProtectedRoute roles={[Role.STAFF]}><ProfileDashboard /></ProtectedRoute>} />
                             
                             {/* Admin Routes */}
-                            <ReactRouterDOM.Route path="/admin/users" element={<ProtectedRoute roles={[Role.ADMIN]}><UserManagement /></ProtectedRoute>} />
-                            <ReactRouterDOM.Route path="/admin/questions" element={<ProtectedRoute roles={[Role.ADMIN]}><QuestionManagement /></ProtectedRoute>} />
+                            <Route path="/admin/users" element={<ProtectedRoute roles={[Role.ADMIN]}><UserManagement /></ProtectedRoute>} />
+                            <Route path="/admin/questions" element={<ProtectedRoute roles={[Role.ADMIN]}><QuestionManagement /></ProtectedRoute>} />
                             
-                            <ReactRouterDOM.Route path="*" element={<ReactRouterDOM.Navigate to="/dashboard" />} />
-                        </ReactRouterDOM.Routes>
+                            <Route path="*" element={<Navigate to="/dashboard" />} />
+                        </Routes>
                     </Layout>
                 </ProtectedRoute>
             } />
-        </ReactRouterDOM.Routes>
+        </Routes>
     );
 };
 

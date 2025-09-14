@@ -1,6 +1,6 @@
 import React from 'react';
-// FIX: Changed react-router-dom import to a namespace import to fix module resolution issues.
-import * as ReactRouterDOM from 'react-router-dom';
+// FIX: Reverted to named imports for react-router-dom to resolve component and hook resolution errors.
+import { useLocation, Navigate, Link } from 'react-router-dom';
 import { ExamResult, Question } from '../types';
 import { CheckIcon, XMarkIcon } from '../components/icons/Icons';
 
@@ -37,11 +37,11 @@ const AnswerReview: React.FC<{ question: Question; userAnswer: string }> = ({ qu
 };
 
 const ExamResults: React.FC = () => {
-    const location = ReactRouterDOM.useLocation();
+    const location = useLocation();
     const result = location.state as ExamResult | null;
 
     if (!result) {
-        return <ReactRouterDOM.Navigate to="/dashboard" />;
+        return <Navigate to="/dashboard" />;
     }
 
     const { score, totalQuestions, answers, questions } = result;
@@ -58,9 +58,9 @@ const ExamResults: React.FC = () => {
                 <p className="text-xl text-gray-600 dark:text-gray-400 mt-2">You scored {score} out of {totalQuestions} questions correctly.</p>
 
                 <div className="mt-8">
-                     <ReactRouterDOM.Link to="/dashboard" className="bg-cbn-green text-white font-bold py-3 px-6 rounded-lg hover:bg-opacity-90 transition-transform transform hover:scale-105">
+                     <Link to="/dashboard" className="bg-cbn-green text-white font-bold py-3 px-6 rounded-lg hover:bg-opacity-90 transition-transform transform hover:scale-105">
                         Back to Dashboard
-                     </ReactRouterDOM.Link>
+                     </Link>
                 </div>
             </div>
 
