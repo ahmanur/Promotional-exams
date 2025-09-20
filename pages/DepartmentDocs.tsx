@@ -214,6 +214,11 @@ const DepartmentDocs: React.FC = () => {
             return;
         }
 
+        if (!document.body) {
+            alert("Unable to download at this time. Please try again.");
+            return;
+        }
+
         const fileContent = Array.isArray(content) ? content.join('\n\n--- End of Page ---\n\n') : content;
         const blob = new Blob([fileContent], { type: 'text/plain;charset=utf-8;' });
         const link = document.createElement("a");
