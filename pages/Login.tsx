@@ -25,7 +25,7 @@ const Login: React.FC = () => {
     <div className="min-h-screen flex items-center justify-center bg-cbn-green dark:bg-gray-900">
       <div className="w-full max-w-md p-8 space-y-6 bg-white dark:bg-gray-800 rounded-lg shadow-2xl">
         <div className="text-center">
-            <img src="https://www.cbn.gov.ng/images/cbnlogo.gif" alt="CBN Logo" className="w-24 h-24 mx-auto mb-4" />
+            <img src="/cbn-exam-hub-logo.png" alt="CBN Exam Hub Logo" className="w-32 h-32 mx-auto mb-4" />
           <h1 className="text-3xl font-bold text-cbn-green dark:text-cbn-gold">Promotion Exam Hub</h1>
           <p className="mt-2 text-gray-600 dark:text-gray-300">Please sign in to continue</p>
         </div>
