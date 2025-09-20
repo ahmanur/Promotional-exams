@@ -123,24 +123,31 @@ const ExamPortal: React.FC = () => {
         const state = (location.state as { examMode?: 'standard' | 'instant', questionCount?: number, timeLimit?: number }) || {};
         setExamMode(state.examMode || 'standard');
         
+        let questionsForExam: Question[];
+        let questionCount: number;
+        let timeLimit: number;
+        let title: string;
+
         if (deptId === 'general') {
-            const questionCount = state.questionCount || 10;
-            const timeLimit = state.timeLimit || 15;
-            
+            questionsForExam = shuffleArray(mockQuestions);
+            questionCount = state.questionCount || 10;
+            timeLimit = state.timeLimit || 15;
+            title = 'General Promotion Exam';
             if (!location.state) {
                  console.warn("Navigated to general exam without state. Using defaults.");
             }
-
-            const allQuestionsShuffled = shuffleArray(mockQuestions);
-            setQuestions(allQuestionsShuffled.slice(0, questionCount));
-            setTimeLeft(timeLimit * 60);
-            setExamTitle('General Promotion Exam');
         } else {
-            const deptQuestions = mockQuestions.filter(q => q.departmentId === deptId);
-            setQuestions(shuffleArray(deptQuestions));
-            setTimeLeft(30 * 60); // Default for department exams
-            setExamTitle(`${department?.name || 'Department'} Practice Exam`);
+            const allDeptQuestions = mockQuestions.filter(q => q.departmentId === deptId);
+            questionsForExam = shuffleArray(allDeptQuestions);
+            questionCount = state.questionCount || allDeptQuestions.length;
+            timeLimit = state.timeLimit || 30;
+            title = `${department?.name || 'Department'} Practice Exam`;
         }
+        
+        setQuestions(questionsForExam.slice(0, questionCount));
+        setTimeLeft(timeLimit * 60);
+        setExamTitle(title);
+
     }, [deptId, location.state, department?.name]);
 
     useEffect(() => {
@@ -184,9 +191,9 @@ const ExamPortal: React.FC = () => {
 
     if (questions.length === 0) {
         return (
-            <div className="text-center p-8 bg-white rounded-lg shadow-md">
-                <h2 className="text-2xl font-bold text-gray-700">No Questions Available</h2>
-                <p className="text-gray-500 mt-2">There are currently no practice questions available for this exam.</p>
+            <div className="text-center p-8 bg-white dark:bg-gray-800 rounded-lg shadow-md">
+                <h2 className="text-2xl font-bold text-gray-700 dark:text-gray-200">No Questions Available</h2>
+                <p className="text-gray-500 dark:text-gray-400 mt-2">There are currently no practice questions available for this exam.</p>
             </div>
         );
     }
